@@ -1,30 +1,12 @@
 #include <iostream>
 #include <Windows.h>
 #include <CommCtrl.h>
-#pragma comment(lib, "comctl32.lib")
+#include "../TrayVolumeControlLib/TVCShared.h"
 
-#define UID_TRAYICONVOLUME  100
+#pragma comment(lib, "comctl32.lib")
 
 const LPCWSTR szWindowClass = L"TRAYVOLCTRL";
 const UINT WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
-
-HWND FindTrayToolbarWindow()
-{
-	HWND hWnd = FindWindow(L"Shell_TrayWnd", NULL);
-	if (hWnd)
-	{
-		hWnd = FindWindowEx(hWnd, NULL, L"TrayNotifyWnd", NULL);
-		if (hWnd)
-		{
-			hWnd = FindWindowEx(hWnd, NULL, L"SysPager", NULL);
-			if (hWnd)
-			{
-				hWnd = FindWindowEx(hWnd, NULL, L"ToolbarWindow32", NULL);
-			}
-		}
-	}
-	return hWnd;
-}
 
 struct TRAYDATA
 {

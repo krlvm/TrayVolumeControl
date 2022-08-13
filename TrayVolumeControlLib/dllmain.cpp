@@ -1,13 +1,7 @@
 #include "pch.h"
-
-#define WM_TRAYICONVOLUME 0x460
-
-#define UID_TRAYICONVOLUME  100
-#define GUID_TRAYICONVOLUME { 0x7820AE73, 0x23E3, 0x4229, { 0x82, 0xC1, 0xE4, 0x1C, 0xB6, 0x7D, 0x5B, 0x9C } };
-//                          {   7820AE73 -  23E3 -  4229  -   82    C1 -  E4    1C    B6    7D    5B    9C   }
+#include "TVCShared.h"
 
 thread_local int nSign = 0;
-thread_local unsigned short nVolume = 0;
 
 thread_local UINT_PTR uTooltipTimerId;
 
@@ -52,53 +46,15 @@ HRESULT ConfigureAudioEndpointVolume(AudioEndpointVolumeHandler handler)
     return hr;
 }
 
-#pragma region "Tooltip Management"
-void DestroyTooltipTimerProc(
-    HWND hWnd,
-    UINT uMsg,
-    UINT_PTR idEvent,
-    DWORD dwTime
-)
-{
-    if (!hWndTooltip) return;
-    if (!DestroyWindow(hWndTooltip)) return;
-    hWndTooltip = NULL;
-}
 void ShowVolumeTooltip()
 {
-    KillTimer(NULL, uTooltipTimerId);
+    HWND hWndTray = FindTrayToolbarWindow();
+    if (!hWndTray) return;
 
-    wchar_t text[5];
-    wsprintf(text, L"%d%%", nVolume);
-
-    TOOLINFO ti;
-    ZeroMemory(&ti, sizeof(TOOLINFO));
-    ti.cbSize = sizeof(TOOLINFO);
-    ti.uId = (UINT)hWndTooltip;
-    ti.lpszText = text;
-
-    if (!hWndTooltip)
-    {
-        hWndTooltip = CreateWindowEx(WS_EX_TOPMOST,
-            TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
-            CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-            NULL, NULL, NULL, NULL);
-        ti.uId = (UINT)hWndTooltip;
-
-        SendMessage(hWndTooltip, TTM_ADDTOOL, 0, (LPARAM)&ti);
-    }
-    else
-    {
-        SendMessage(hWndTooltip, TTM_TRACKACTIVATE, FALSE, (LPARAM)&ti);
-        SendMessage(hWndTooltip, TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
-    }
-
-    SendMessage(hWndTooltip, TTM_TRACKACTIVATE, TRUE, (LPARAM)&ti);
-    SendMessage(hWndTooltip, TTM_POPUP, 0, 0);
-
-    uTooltipTimerId = SetTimer(NULL, 0, 500, &DestroyTooltipTimerProc);
+    HWND hWndTooltip = (HWND)SendMessageW(hWndTray, TB_GETTOOLTIPS, 0i64, 0i64);
+    SendMessageW(hWndTooltip, TTM_POPUP, 0, 0);
+    SendMessageW(hWndTooltip, TTM_POPUP, 0, 0);
 }
-#pragma endregion
 
 LRESULT CALLBACK SubclassProc(
     HWND hWnd,
@@ -128,8 +84,6 @@ LRESULT CALLBACK SubclassProc(
 
                 float delta = 0.01 * nSign;
                 currentVolume = max(0, min(1.0f, currentVolume + delta));
-                
-                nVolume = (short)(currentVolume*100);
 
                 BOOL bIsMute;
                 endpointVolume->GetMute(&bIsMute);
