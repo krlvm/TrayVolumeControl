@@ -87,7 +87,8 @@ LRESULT CALLBACK SubclassProc(
 
                 BOOL bIsMute;
                 endpointVolume->GetMute(&bIsMute);
-                if (!bIsMute && currentVolume == 0)
+
+                if (!bIsMute && currentVolume < 0.01)
                 {
                     endpointVolume->SetMute(true, NULL);
                 }
