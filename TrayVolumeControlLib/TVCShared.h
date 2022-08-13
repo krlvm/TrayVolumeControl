@@ -1,4 +1,5 @@
 #pragma once
+#include <Windows.h>
 
 #define WM_TRAYICONVOLUME 0x460
 
