@@ -83,21 +83,23 @@ LRESULT CALLBACK SubclassProc(
                 endpointVolume->GetMasterVolumeLevelScalar(&currentVolume);
 
                 float delta = 0.01 * nSign;
-                currentVolume = max(0, min(1.0f, currentVolume + delta));
+                float newVolume = max(0, min(1.0f, currentVolume + delta));
+
+                if (currentVolume == newVolume) return S_OK;
 
                 BOOL bIsMute;
                 endpointVolume->GetMute(&bIsMute);
 
-                if (!bIsMute && currentVolume < 0.01)
+                if (!bIsMute && newVolume < 0.01)
                 {
                     endpointVolume->SetMute(true, NULL);
                 }
-                else if (bIsMute && currentVolume != 0)
+                else if (bIsMute && newVolume != 0)
                 {
                     endpointVolume->SetMute(false, NULL);
                 }
 
-                return endpointVolume->SetMasterVolumeLevelScalar(currentVolume, NULL);
+                return endpointVolume->SetMasterVolumeLevelScalar(newVolume, NULL);
             });
 
             if (SUCCEEDED(hr))
