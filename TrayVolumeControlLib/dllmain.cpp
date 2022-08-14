@@ -3,11 +3,8 @@
 
 thread_local int nSign = 0;
 
-thread_local UINT_PTR uTooltipTimerId;
-
 thread_local bool bIsListeningInput = false;
 thread_local bool bSuspendListeningInput = false;
-thread_local HWND hWndTooltip = NULL;
 
 bool CheckIfCursorIsInTrayIconBounds(HWND hWnd);
 
